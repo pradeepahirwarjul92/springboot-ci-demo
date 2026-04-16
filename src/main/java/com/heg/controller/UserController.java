@@ -37,7 +37,8 @@ public class UserController {
             new User(105L, "Sneha", "sneha@example.com"),
             new User(106L, "Alok", "alok@example.com"),
             new User(107L, "Nitin", "nitin@example.com"),
-            new User(108L, "Gaurav", "gaurav@example.com")
+            new User(108L, "Gaurav", "gaurav@example.com"),
+            new User(109L, "Gaurav", "gaurav@example.com")
     ));
 
     // ✅ Get all users
