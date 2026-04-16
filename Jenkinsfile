@@ -6,7 +6,6 @@ pipeline {
     }
 
     environment {
-        // Paths for Sir's machine
         TOMCAT_PATH = 'E:\\apache-tomcat-10.1.28'
         MAVEN_HOME  = 'C:\\Users\\heg\\.m2\\wrapper\\dists\\apache-maven-3.9.12\\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\\bin'
         JAVA_HOME   = 'C:\\Program Files\\Java\\jdk-17'
@@ -17,7 +16,6 @@ pipeline {
             steps {
                 echo "Clearing port 8090..."
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                    // This kills any ghost process still on the port
                     bat 'for /f "tokens=5" %%a in (\'netstat -aon ^| findstr :8090\') do taskkill /f /pid %%a 2>nul'
                 }
             }
@@ -33,9 +31,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "Wiping old cache and deploying new WAR..."
-                // Step 1: Force delete old folder
                 bat "if exist \"${TOMCAT_PATH}\\webapps\\demo\" rd /s /q \"${TOMCAT_PATH}\\webapps\\demo\""
-                // Step 2: Copy the new WAR
                 bat "xcopy /y \"target\\demo.war\" \"${TOMCAT_PATH}\\webapps\\*\""
             }
         }
@@ -43,7 +39,6 @@ pipeline {
         stage('Start Server') {
             steps {
                 echo "Launching Tomcat in detached mode..."
-                // BUILD_ID=dontKillMe is the secret to keeping Tomcat alive after Jenkins finishes
                 withEnv(['BUILD_ID=dontKillMe']) {
                     bat """
                         set "JAVA_HOME=${JAVA_HOME}"
@@ -52,8 +47,9 @@ pipeline {
                         start /B startup.bat
                     """
                 }
-                echo "Waiting 10 seconds for Spring Boot to initialize..."
-                bat "timeout /t 10 /nobreak > nul"
+                echo "Waiting 15 seconds for Spring Boot to initialize..."
+                // Use Jenkins native sleep instead of Windows timeout
+                sleep 15
             }
         }
     }
