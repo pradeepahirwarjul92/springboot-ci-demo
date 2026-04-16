@@ -15,11 +15,12 @@ pipeline {
     stages {
         stage('Surgical Stop') {
             steps {
-                echo "Stopping old Docker container... (Local Tomcat on 8090 will stay running)"
+                echo "Forcing removal of old container to prevent naming conflicts..."
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     // We only kill the Docker container, NOT the local port 8090
-                    bat "docker stop ${IMAGE_NAME} || exit 0"
-                    bat "docker rm ${IMAGE_NAME} || exit 0"
+                    bat "docker stop ${IMAGE_NAME} 2>nul || exit 0"
+                    sleep 2
+                    bat "docker rm -f ${IMAGE_NAME} 2>nul || exit 0"
                 }
             }
         }
