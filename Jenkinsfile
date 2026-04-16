@@ -10,7 +10,7 @@ pipeline {
         MAVEN_HOME  = 'C:\\Users\\heg\\.m2\\wrapper\\dists\\apache-maven-3.9.12\\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\\bin'
         JAVA_HOME   = 'C:\\Program Files\\Java\\jdk-17'
         // Replace this with the token you generated in SonarQube
-        SONAR_TOKEN = 'your_generated_token_here' 
+        SONAR_TOKEN = 'sqa_b77a0c65feff9e8f0bcd782da843b9dfe8d7c640' 
     }
 
     stages {
