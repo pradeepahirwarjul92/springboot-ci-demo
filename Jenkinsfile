@@ -38,17 +38,16 @@ pipeline {
 
         stage('Start Server') {
             steps {
-                echo "Launching Tomcat in detached mode..."
+                echo "Launching Tomcat using Freestyle method..."
                 withEnv(['BUILD_ID=dontKillMe']) {
                     bat """
                         set "JAVA_HOME=${JAVA_HOME}"
-                        set "CATALINA_HOME=${TOMCAT_PATH}"
+                        set "JRE_HOME=${JAVA_HOME}"
                         cd /d "${TOMCAT_PATH}\\bin"
-                        start /B startup.bat
+                        start "" /B cmd /C startup.bat
                     """
                 }
-                echo "Waiting 15 seconds for Spring Boot to initialize..."
-                // Use Jenkins native sleep instead of Windows timeout
+                echo "Waiting 15 seconds for Spring Boot initialization..."
                 sleep 15
             }
         }
