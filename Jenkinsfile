@@ -42,9 +42,9 @@ pipeline {
 
         stage('Docker Run') {
             steps {
-                echo "Launching container on port 8080..."
+                echo "Launching container... Mapping Local 8090 to Docker 8080"
                 // -d runs it in the background, -p maps your PC port to the Docker port
-                bat "docker run -d --name ${IMAGE_NAME} -p 8080:8080 ${IMAGE_NAME}"
+                bat "docker run -d --name ${IMAGE_NAME} -p 8090:8080 ${IMAGE_NAME}"
             }
         }
     }
