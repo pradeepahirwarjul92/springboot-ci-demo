@@ -41,8 +41,8 @@ pipeline {
         stage('Docker Run') {
             steps {
                 echo "Launching container on PORT 9090 to avoid conflict with Local Tomcat"
-                // -p 9090 (PC) : 8080 (Inside Docker)
-                bat "docker run -d --name ${IMAGE_NAME} -p 9090:8080 ${IMAGE_NAME}"
+                // -p 9090 (PC) : 8090 (Inside Docker)
+                bat "docker run -d --name ${IMAGE_NAME} -p 9090:8090 ${IMAGE_NAME}"
             }
         }
     }
