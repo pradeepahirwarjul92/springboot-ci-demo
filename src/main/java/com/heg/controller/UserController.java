@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.heg.entity.User;
-
 
 @RestController
 @RequestMapping("/users")
@@ -35,13 +33,11 @@ public class UserController {
             new User(11L, "Pooja", "pooja@example.com"),
             new User(12L, "Neha", "neha@example.com"),
             new User(13L, "Kiran", "kiran@example.com"),
-            new User(14L, "Ritika", "ritika@example.com"),
-            new User(15L, "Sneha", "sneha@example.com"),
-            new User(16L, "Alok", "alok@example.com"),
-            new User(17L, "Nitin", "nitin@example.com"),
-            new User(18L, "Gaurav", "gaurav@example.com"),
-            new User(19L, "Meena", "meena@example.com"),
-            new User(20L, "Arjun", "arjun@example.com")
+            new User(104L, "Ritika", "ritika@example.com"),
+            new User(105L, "Sneha", "sneha@example.com"),
+            new User(106L, "Alok", "alok@example.com"),
+            new User(107L, "Nitin", "nitin@example.com"),
+            new User(108L, "Gaurav", "gaurav@example.com")
     ));
 
     // ✅ Get all users
