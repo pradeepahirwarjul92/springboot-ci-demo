@@ -53,7 +53,7 @@ pipeline {
             echo "------------------------------------------------------------"
             echo "DEPLOYMENT SUCCESSFUL!"
             echo "Local Tomcat: http://localhost:8090/demo/users"
-            echo "Docker Container: http://localhost:9090/users"
+            echo "Docker Container: http://localhost:9090/demo/users"
             echo "------------------------------------------------------------"
         }
     }
