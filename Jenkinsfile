@@ -41,9 +41,9 @@ pipeline {
 
         stage('Docker Run') {
             steps {
-                echo "Launching container on PORT 9090 to avoid conflict with Local Tomcat"
+                echo "Launching container with /demo context path to match Tomcat..."
                 // -p 9090 (PC) : 8090 (Inside Docker)
-                bat "docker run -d --name ${IMAGE_NAME} -p 9090:8090 ${IMAGE_NAME}"
+                bat "docker run -d --name ${IMAGE_NAME} -p 9090:8090 -e SERVER_SERVLET_CONTEXT_PATH=/demo ${IMAGE_NAME}"
             }
         }
     }
