@@ -6,49 +6,54 @@ pipeline {
     }
 
     environment {
-        // Use double backslashes \\ for Windows paths in Groovy
+        // Paths for Sir's machine
         TOMCAT_PATH = 'E:\\apache-tomcat-10.1.28'
         MAVEN_HOME  = 'C:\\Users\\heg\\.m2\\wrapper\\dists\\apache-maven-3.9.12\\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\\bin'
         JAVA_HOME   = 'C:\\Program Files\\Java\\jdk-17'
     }
 
     stages {
-        stage('Stop Existing Server') {
+        stage('Surgical Stop') {
             steps {
-                echo "Finding and killing process on port 8090..."
+                echo "Clearing port 8090..."
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                    // || exit 0 is a backup safety for the Windows shell
-                    bat 'for /f "tokens=5" %%a in (\'netstat -aon ^| findstr :8090\') do taskkill /f /pid %%a 2>nul || exit 0'
+                    // This kills any ghost process still on the port
+                    bat 'for /f "tokens=5" %%a in (\'netstat -aon ^| findstr :8090\') do taskkill /f /pid %%a 2>nul'
                 }
             }
         }
 
-        stage('Clean and Build') {
+        stage('Maven Build') {
             steps {
-                echo "Compiling and Packaging..."
+                echo "Compiling latest code from GitHub..."
                 bat "\"${MAVEN_HOME}\\mvn.cmd\" clean package -DskipTests"
             }
         }
 
-        stage('Surgical Clean and Deploy') {
+        stage('Deploy') {
             steps {
-                echo "Removing old folder and deploying fresh WAR..."
-                // Fix: Use backslashes for the rd and xcopy commands
+                echo "Wiping old cache and deploying new WAR..."
+                // Step 1: Force delete old folder
                 bat "if exist \"${TOMCAT_PATH}\\webapps\\demo\" rd /s /q \"${TOMCAT_PATH}\\webapps\\demo\""
+                // Step 2: Copy the new WAR
                 bat "xcopy /y \"target\\demo.war\" \"${TOMCAT_PATH}\\webapps\\*\""
             }
         }
 
-        stage('Start Tomcat') {
+        stage('Start Server') {
             steps {
-                echo "Starting Server..."
+                echo "Launching Tomcat in detached mode..."
+                // BUILD_ID=dontKillMe is the secret to keeping Tomcat alive after Jenkins finishes
                 withEnv(['BUILD_ID=dontKillMe']) {
                     bat """
                         set "JAVA_HOME=${JAVA_HOME}"
+                        set "CATALINA_HOME=${TOMCAT_PATH}"
                         cd /d "${TOMCAT_PATH}\\bin"
                         start /B startup.bat
                     """
                 }
+                echo "Waiting 10 seconds for Spring Boot to initialize..."
+                bat "timeout /t 10 /nobreak > nul"
             }
         }
     }
@@ -56,7 +61,7 @@ pipeline {
     post {
         success {
             echo "------------------------------------------------------------"
-            echo "DEPLOYMENT SUCCESSFUL! URL: http://localhost:8090/demo/users"
+            echo "SUCCESS: App is live at http://localhost:8090/demo/users"
             echo "------------------------------------------------------------"
         }
     }
