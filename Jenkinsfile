@@ -8,26 +8,16 @@ pipeline {
 
     environment {
         // --- Core Environment Paths for your PC ---
-        MAVEN_HOME  = 'C:\\Users\\heg\\.m2\\wrapper\\dists\\apache-maven-3.9.12\\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\\bin'
-        JAVA_HOME   = 'C:\\Program Files\\Java\\jdk-17'
-        SONAR_TOKEN = 'sqa_b77a0c65feff9e8f0bcd782da843b9dfe8d7c640'
-        IMAGE_NAME  = 'user-service-app'
+        MAVEN_HOME   = 'C:\\Users\\heg\\.m2\\wrapper\\dists\\apache-maven-3.9.12\\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\\bin'
+        JAVA_HOME    = 'C:\\Program Files\\Java\\jdk-17'
+        SONAR_TOKEN  = 'sqa_b77a0c65feff9e8f0bcd782da843b9dfe8d7c640'
+        IMAGE_NAME   = 'user-service-app'
         SETTINGS_XML = 'C:\\Users\\heg\\.m2\\settings.xml'
+        // Path to your Ansible project inside WSL
+        ANSIBLE_DIR  = '~/ansible-project'
     }
 
     stages {
-        stage('Surgical Stop') {
-            steps {
-                echo "Forcing removal of old container to prevent naming conflicts..."
-                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                    // Ensures the name is free before starting a new build
-                    bat "docker stop ${IMAGE_NAME} 2>nul || exit 0"
-                    sleep 2
-                    bat "docker rm -f ${IMAGE_NAME} 2>nul || exit 0"
-                }
-            }
-        }
-
         stage('Maven Build & Sonar') {
             steps {
                 echo "Compiling code and performing SonarQube quality scan..."
@@ -52,11 +42,12 @@ pipeline {
             }
         }
 
-        stage('Docker Run') {
+        stage('Ansible Deployment') {
             steps {
-                echo "Launching container on Port 9090 with /demo context..."
-                // Mapped to 9090 to avoid conflict with your local Tomcat
-                bat "docker run -d --name ${IMAGE_NAME} -p 9090:8090 -e SERVER_SERVLET_CONTEXT_PATH=/demo ${IMAGE_NAME}"
+                echo "Handing off to Ansible for professional Deployment..."
+                // This connects Jenkins to Ansible by calling the playbook through WSL
+                // It replaces the previous 'Surgical Stop' and 'Docker Run' stages
+                bat "wsl ansible-playbook -i ${ANSIBLE_DIR}/inventory.ini ${ANSIBLE_DIR}/deploy_java_app.yml"
             }
         }
     }
@@ -67,8 +58,7 @@ pipeline {
             echo "CI/CD PIPELINE COMPLETE!"
             echo "1. Code Quality: http://localhost:9000"
             echo "2. Nexus Artifact: http://localhost:8081/#browse/browse:maven-releases"
-            echo "3. Docker App: http://localhost:9090/demo/users"
-            echo "4. Local Tomcat: http://localhost:8090/demo/users"
+            echo "3. Docker App (Ansible Deployed): http://localhost:9090/demo/users"
             echo "---------------------------------------------------------------------------------"
         }
         failure {
