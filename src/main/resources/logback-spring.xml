@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <appender name="ELASTIC" class="com.internetitem.logback.ElasticsearchAppender">
+        <url>http://elasticsearch:9200/_bulk</url>
+        <index>user-service-logs-%date{yyyy-MM-dd}</index>
+        <type>tester</type>
+        <connectTimeout>30000</connectTimeout>
+        <errorsToConsole>true</errorsToConsole>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ELASTIC" />
+    </root>
+</configuration>
