@@ -14,7 +14,7 @@
 	<!-- Project Info -->
 	<groupId>com.heg</groupId>
 	<artifactId>Docker-User-Service-Docker</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<name>Docker-User-Service-Docker</name>
 	<description>Docker User Service Docker</description>
 	<!-- Properties -->
