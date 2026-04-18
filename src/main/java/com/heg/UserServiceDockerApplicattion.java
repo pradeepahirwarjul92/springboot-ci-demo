@@ -4,8 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cache.annotation.EnableCaching; // <-- 1. Add this import
 
 @SpringBootApplication
+@EnableCaching // <-- 2. Add this annotation to activate Redis caching
 public class UserServiceDockerApplicattion extends SpringBootServletInitializer {
 
 	@Override

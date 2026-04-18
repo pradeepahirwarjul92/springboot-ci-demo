@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,12 +44,14 @@ public class UserController {
 
     // ✅ Get all users
     @GetMapping
+    @Cacheable(value = "users")
     public List<User> getUsers() {
         return users;
     }
 
     // ✅ Get user by ID
     @GetMapping("/{id}")
+    @Cacheable(value = "users", key = "#id")
     public User getUser(@PathVariable Long id) {
         return users.stream()
                 .filter(u -> u.getId().equals(id))
