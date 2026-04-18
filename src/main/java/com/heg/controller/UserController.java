@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,6 +62,7 @@ public class UserController {
 
     // ✅ Add new user
     @PostMapping
+    @CacheEvict(value = "users", allEntries = true)
     public User addUser(@RequestBody User user) {
         user.setId((long) (users.size() + 1));
         users.add(user);
@@ -69,6 +71,7 @@ public class UserController {
 
     // ✅ Update user
     @PutMapping
+    @CacheEvict(value = "users", allEntries = true)
     public User updateUser(@RequestBody User user) {
         for (int i = 0; i < users.size(); i++) {
             if (users.get(i).getId().equals(user.getId())) {
@@ -81,6 +84,7 @@ public class UserController {
 
     // ✅ Delete user
     @DeleteMapping("/{id}")
+    @CacheEvict(value = "users", allEntries = true)
     public String deleteUser(@PathVariable Long id) {
         users.removeIf(u -> u.getId().equals(id));
         return "User deleted successfully";
