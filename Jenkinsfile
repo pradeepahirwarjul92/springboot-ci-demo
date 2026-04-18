@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo "Handing off to Ansible for professional Deployment..."
                 // Connects Jenkins to Ansible by calling the playbook through WSL
-                bat "wsl bash -lc \"ansible-playbook -i ${ANSIBLE_DIR}/inventory.ini ${ANSIBLE_DIR}/deploy_java_app.yml\""
+                bat "wsl -d Ubuntu bash -lc \"ansible-playbook -i ~/ansible-project/inventory.ini ~/ansible-project/deploy_java_app.yml\""
             }
         }
     }
