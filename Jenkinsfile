@@ -13,6 +13,8 @@ pipeline {
         SONAR_TOKEN  = 'sqa_b77a0c65feff9e8f0bcd782da843b9dfe8d7c640'
         IMAGE_NAME   = 'user-service-app'
         SETTINGS_XML = 'C:\\Users\\heg\\.m2\\settings.xml'
+        // Path to your Ansible project inside WSL
+        ANSIBLE_DIR  = '~/ansible-project'
     }
 
     stages {
@@ -40,13 +42,11 @@ pipeline {
             }
         }
 
-        stage('Deployment (Bypassing WSL)') {
+        stage('Ansible Deployment') {
             steps {
-                echo "Deploying container directly to bypass Windows Service WSL restrictions..."
-                // Runs the commands directly in Jenkins instead of routing through WSL/Ansible
-                bat "docker stop ${IMAGE_NAME} 2>nul || exit 0"
-                bat "docker rm -f ${IMAGE_NAME} 2>nul || exit 0"
-                bat "docker run -d --name ${IMAGE_NAME} -p 9090:8090 -e SERVER_SERVLET_CONTEXT_PATH=/demo ${IMAGE_NAME}"
+                echo "Handing off to Ansible for professional Deployment..."
+                // Connects Jenkins to Ansible by calling the playbook through WSL
+                bat "wsl ansible-playbook -i ${ANSIBLE_DIR}/inventory.ini ${ANSIBLE_DIR}/deploy_java_app.yml"
             }
         }
     }
@@ -57,11 +57,11 @@ pipeline {
             echo "CI/CD PIPELINE COMPLETE!"
             echo "1. Code Quality: http://localhost:9000"
             echo "2. Nexus Artifact: http://localhost:8081/#browse/browse:maven-releases"
-            echo "3. Docker App (Direct Deploy): http://localhost:9090/demo/users"
+            echo "3. Docker App (Ansible Deployed): http://localhost:9090/demo/users"
             echo "---------------------------------------------------------------------------------"
         }
         failure {
-            echo "Build Failed. Please check Jenkins Console Output and Nexus/Sonar connectivity."
+            echo "Build Failed. Please check Jenkins Console Output, Nexus/Sonar connectivity, and Windows Services Logon."
         }
     }
 }
