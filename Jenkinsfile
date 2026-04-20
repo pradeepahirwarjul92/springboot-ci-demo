@@ -21,16 +21,16 @@ pipeline {
         stage('Maven Build & Sonar') {
             steps {
                 echo "Compiling code and performing SonarQube quality scan..."
-                // Uses your settings.xml to bypass proxy for Sonar scan
-                bat "\"${MAVEN_HOME}\\mvn.cmd\" -s \"${SETTINGS_XML}\" clean package sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dsonar.host.url=http://localhost:9000 -DskipTests"
+                // Added -U to force update dependencies and clear cached failures
+                bat "\"${MAVEN_HOME}\\mvn.cmd\" -s \"${SETTINGS_XML}\" clean package sonar:sonar -U -Dsonar.login=${SONAR_TOKEN} -Dsonar.host.url=http://localhost:9000 -DskipTests"
             }
         }
 
         stage('Upload to Nexus') {
             steps {
                 echo "Pushing built artifact to Nexus Repository..."
-                // The 'deploy' command sends your .war file to your private library
-                bat "\"${MAVEN_HOME}\\mvn.cmd\" -s \"${SETTINGS_XML}\" deploy -DskipTests"
+                // Added -U to ensure consistent dependency resolution during deploy
+                bat "\"${MAVEN_HOME}\\mvn.cmd\" -s \"${SETTINGS_XML}\" deploy -U -DskipTests"
             }
         }
 
