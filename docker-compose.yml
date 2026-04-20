@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    networks:
+      - user-app-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.10
+    container_name: logstash
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5044:5044"
+    networks:
+      - user-app-network
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.10
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    networks:
+      - user-app-network
+    depends_on:
+      - elasticsearch
+
+  redis-cache:
+    image: redis:alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    networks:
+      - user-app-network
+
+  user-service-app:
+    image: user-service-app:latest
+    container_name: user-service-app
+    ports:
+      - "9090:8090"
+    environment:
+      - SPRING_REDIS_HOST=redis-cache
+    networks:
+      - user-app-network
+    depends_on:
+      - logstash
+      - redis-cache
+
+networks:
+  user-app-network:
+    driver: bridge
