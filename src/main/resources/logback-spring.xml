@@ -4,8 +4,12 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>elasticsearch:9200</destination>
+        <destination>logstash:5044</destination>
+        
         <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+        
+        <reconnectionDelay>10000</reconnectionDelay>
+        <waitStrategyType>blocking</waitStrategyType>
     </appender>
 
     <root level="INFO">
