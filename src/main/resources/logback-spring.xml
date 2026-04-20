@@ -3,16 +3,13 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
-    <appender name="ELASTIC" class="com.internetitem.logback.ElasticsearchAppender">
-        <url>http://elasticsearch:9200/_bulk</url>
-        <index>user-service-logs-%date{yyyy-MM-dd}</index>
-        <type>tester</type>
-        <connectTimeout>30000</connectTimeout>
-        <errorsToConsole>true</errorsToConsole>
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>elasticsearch:9200</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
     </appender>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
-        <appender-ref ref="ELASTIC" />
+        <appender-ref ref="LOGSTASH" />
     </root>
 </configuration>
