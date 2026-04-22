@@ -9,6 +9,14 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
+    # ADDED: Persistent storage so your dashboard is never deleted
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    # ADDED: Hard limits to stop it from crashing your RAM
+    deploy:
+      resources:
+        limits:
+          memory: 1g
     networks:
       - user-app-network
 
@@ -54,6 +62,7 @@ services:
     depends_on:
       - logstash
       - redis-cache
+
   nexus:
     image: sonatype/nexus3:latest
     container_name: nexus
@@ -64,9 +73,10 @@ services:
     networks:
       - user-app-network
 
-# Add this at the very bottom of your file to keep your Nexus data safe
+# UPDATED: Added es_data to the volumes list
 volumes:
   nexus-data:
+  es_data:
 
 networks:
   user-app-network:
