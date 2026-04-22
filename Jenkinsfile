@@ -25,8 +25,8 @@ pipeline {
         // NEW STAGE: Frees up ~1GB of RAM for the rest of the pipeline
         stage('Resource Cleanup') {
             steps {
-                echo "Stopping SonarQube to free up system memory..."
-                bat "docker stop sonarqube || echo Sonarqube already stopped"
+                echo "Freeing up RAM: Terminating Build Tools..."
+                bat "docker stop sonarqube nexus || echo Sonarqube already stopped"
             }
         }
 
