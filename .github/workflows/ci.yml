@@ -1,13 +1,12 @@
-name: Spring Boot CI-CD to Local Nexus
+name: Native CI-CD to Nexus
 
 on:
   push:
-    branches: [ "main" ] # Triggers on every push to the main branch
+    branches: [ "main" ]
 
 jobs:
   build-and-deploy:
-    # CRITICAL: Use 'self-hosted' to run this on your local PC
-    runs-on: self-hosted 
+    runs-on: self-hosted  # Targets your local PC runner
 
     steps:
       - name: Checkout Code
@@ -18,13 +17,19 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven # Speeds up builds by caching dependencies
+          cache: maven
 
       - name: Build with Maven
-        # This replaces your Jenkins 'Build' stage
-        run: mvn clean package -DskipTests
+        # Using the exact path to mvn.cmd from your local environment
+        run: |
+          & "C:\Users\heg\.m2\wrapper\dists\apache-maven-3.9.12\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\bin\mvn.cmd" clean package -DskipTests
 
       - name: Deploy to Native Nexus
-        # This sends your 0.0.1-SNAPSHOT to your local Nexus
-        # Ensure your local settings.xml has the correct credentials
-        run: mvn deploy -DskipTests
+        # This pushes your demo.war to localhost:8081
+        run: |
+          & "C:\Users\heg\.m2\wrapper\dists\apache-maven-3.9.12\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\bin\mvn.cmd" deploy -DskipTests.cmd" clean package -DskipTests
+
+      - name: Deploy to Native Nexus
+        # This pushes your demo.war (0.0.1-SNAPSHOT) to localhost:8081
+        run: |
+          & "C:\Users\heg\.m2\wrapper\dists\apache-maven-3.9.12\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\bin\mvn.cmd" deploy -DskipTests
