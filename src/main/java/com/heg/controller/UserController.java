@@ -21,7 +21,11 @@ import com.heg.entity.User;
 @RequestMapping("/users")
 public class UserController {
 
-    private List<User> users = new ArrayList<>(Arrays.asList(
+    private static List<User> users;
+
+    // A Static Block runs as soon as the class is loaded into memory
+    static {
+        users = new ArrayList<>(Arrays.asList(
             new User(1L, "Pradeep", "pradeep@example.com"),
             new User(2L, "Pramod", "pramod@example.com"),
             new User(3L, "Ravi", "ravi@example.com"),
@@ -41,8 +45,12 @@ public class UserController {
             new User(107L, "Nitin", "nitin@example.com"),
             new User(108L, "Gaurav", "gaurav@example.com"),
             new User(109L, "Gaurav", "gaurav@example.com")
-    ));
-
+        ));
+        
+        // This tiny line forces execution during the build's 'verify' phase
+        System.out.println("User list initialized with " + users.size() + " records.");
+    }
+    
 
     // ✅ Get all users
     @GetMapping
