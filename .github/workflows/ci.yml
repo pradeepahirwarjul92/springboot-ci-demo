@@ -1,17 +1,19 @@
-name: Native CI-CD to Nexus
+name: End-to-End User Service Pipeline
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-deploy:
+  pipeline:
     runs-on: self-hosted
-    
+
     env:
-      # Focus on connectivity: Using the new stable location
       MAVEN_BIN: 'C:\maven\apache-maven-3.9.12\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\bin\mvn.cmd'
       SETTINGS_XML: 'C:\maven\settings.xml'
+      JAVA_HOME: 'C:\Program Files\Java\jdk-17'
+      SONAR_TOKEN: 'sqa_b77a0c65feff9e8f0bcd782da843b9dfe8d7c640'
+      IMAGE_NAME: 'user-service-app'
       HTTP_PROXY: 'http://192.168.9.112:808'
       HTTPS_PROXY: 'http://192.168.9.112:808'
 
@@ -19,12 +21,25 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build with Maven
-        # This uses the Call Operator (&) to run the global Maven command
+      # PHASE 1: Quality Gate (Must come first)
+      - name: SonarQube Analysis
         run: |
-          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean package -DskipTests
+          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean verify sonar:sonar `
+          -Dsonar.login="${{ env.SONAR_TOKEN }}" `
+          -Dsonar.host.url="http://localhost:9000" `
+          -DskipTests -U
 
-      - name: Deploy to Native Nexus
-        # This pushes the artifact to localhost:8081 as per your diagram
+      # PHASE 2: Artifact Storage (Only runs if SonarQube succeeds)
+      - name: Upload to Nexus
         run: |
-          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests
+          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests -U
+
+      # PHASE 3: Containerization
+      - name: Docker Build
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }} .
+
+      # PHASE 4: Deployment
+      - name: Ansible Deployment (via WSL)
+        run: |
+          wsl -d Ubuntu bash -lc "ansible-playbook -i ~/ansible-project/inventory.ini ~/ansible-project/deploy_java_app.yml"
