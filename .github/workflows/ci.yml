@@ -8,13 +8,10 @@ jobs:
   build-and-deploy:
     runs-on: self-hosted
     
-    # Matching your Jenkins 'environment' block
     env:
-      JAVA_HOME: 'C:\Program Files\Java\jdk-17'
-      SONAR_TOKEN: 'sqa_b77a0c65feff9e8f0bcd782da843b9dfe8d7c640'
-      IMAGE_NAME: 'user-service-app'
+      # Focus on connectivity: Using the new stable location
+      MAVEN_BIN: 'C:\maven\apache-maven-3.9.12\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\bin\mvn.cmd'
       SETTINGS_XML: 'C:\Users\heg\.m2\settings.xml'
-      # Adding the Proxy variables so Maven can download binaries
       HTTP_PROXY: 'http://192.168.9.112:808'
       HTTPS_PROXY: 'http://192.168.9.112:808'
 
@@ -23,17 +20,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build with Maven
-        # Using the absolute path to mvn.cmd to ensure it's found
+        # This uses the Call Operator (&) to run the global Maven command
         run: |
-          & "C:\Users\heg\.m2\wrapper\dists\apache-maven-3.9.12\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\bin\mvn.cmd" -s "${{ env.SETTINGS_XML }}" clean package -DskipTests
+          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean package -DskipTests
 
       - name: Deploy to Native Nexus
-        # This pushes the 0.0.1-SNAPSHOT artifact to localhost:8081
+        # This pushes the artifact to localhost:8081 as per your diagram
         run: |
-          & "C:\Users\heg\.m2\wrapper\dists\apache-maven-3.9.12\59fe215c0ad6947fea90184bf7add084544567b927287592651fda3782e0e798\bin\mvn.cmd" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests
-
-      - name: Ansible Deployment
-        # Placeholder for your Ansible phase matching the diagram
-        run: |
-          echo "Starting Ansible deployment for ${{ env.IMAGE_NAME }}..."
-          # cd ${{ env.ANSIBLE_DIR }} && ansible-playbook deploy.yml
+          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests
