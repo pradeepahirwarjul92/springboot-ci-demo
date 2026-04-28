@@ -14,7 +14,7 @@
 
     <groupId>com.heg</groupId>
     <artifactId>Docker-User-Service-Docker</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <name>Docker-User-Service-Docker</name>
     <description>Docker User Service with SonarQube Coverage</description>
 
@@ -25,10 +25,6 @@
         <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
-    <!-- ============================================================ -->
-    <!-- NEXUS: tells Maven WHERE to deploy the WAR                   -->
-    <!-- The <id> here MUST match the <id> in your settings.xml       -->
-    <!-- ============================================================ -->
     <distributionManagement>
         <snapshotRepository>
             <id>nexus-snapshots</id>
@@ -72,7 +68,17 @@
     </dependencyManagement>
 
     <build>
+        <!-- ✅ Change this name = URL context path changes automatically -->
         <finalName>demo</finalName>
+
+        <!-- ✅ Enables @...@ placeholder replacement in application.properties -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
