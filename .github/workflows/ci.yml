@@ -34,7 +34,7 @@ jobs:
           "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" `
           "-U"
 
-      # PHASE 2: Artifact Storage (Only if Phase 1 passes)
+      # PHASE 2: Artifact Storage (Only if Phase 1 passes) ok
       - name: Upload to Nexus
         run: |
           & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests -U
