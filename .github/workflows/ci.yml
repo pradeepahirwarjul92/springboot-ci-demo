@@ -39,6 +39,7 @@ jobs:
           & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests -U
 
       # PHASE 3: Containerization
+      # trigger docker build test
       - name: Docker Build
         run: |
           docker build -t ${{ env.IMAGE_NAME }} .
