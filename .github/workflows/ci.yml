@@ -13,7 +13,7 @@ jobs:
       SETTINGS_XML: 'C:\maven\settings.xml'
       JAVA_HOME: 'C:\Program Files\Java\jdk-17'
       SONAR_TOKEN: 'sqa_b77a0c65feff9e8f0bcd782da843b9dfe8d7c640'
-      IMAGE_NAME: 'user-service-app'
+      IMAGE_NAME: 'springboot-user-service'
       HTTP_PROXY: 'http://192.168.9.112:808'
       HTTPS_PROXY: 'http://192.168.9.112:808'
       # ← GIT_HTTP_PROXY and GIT_HTTPS_PROXY REMOVED
