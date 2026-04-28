@@ -55,6 +55,12 @@ jobs:
             Write-Error "app.war NOT found - download failed!"
             exit 1
           }
+          
+      - name: Debug workspace
+        run: |
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "Files in directory:"
+          Get-ChildItem -Name
 
       - name: Docker Build
         run: |
