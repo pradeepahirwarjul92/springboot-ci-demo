@@ -1,42 +1,31 @@
 package com.heg.entity;
 
+import java.io.Serializable;
 
+public class User implements Serializable {
 
+    private static final long serialVersionUID = 1L;
 
-public class User {
-	
-	
-	    private Long id;
+    private Long id;
+    private String name;
+    private String email;
 
-	    private String name;
-	    private String email;
-		public Long getId() {
-			return id;
-		}
-		public void setId(Long id) {
-			this.id = id;
-		}
-		public String getName() {
-			return name;
-		}
-		public void setName(String name) {
-			this.name = name;
-		}
-		public String getEmail() {
-			return email;
-		}
-		public void setEmail(String email) {
-			this.email = email;
-		}
-		public User(Long id, String name, String email) {
-			super();
-			this.id = id;
-			this.name = name;
-			this.email = email;
-		}
-		
-		
-		
-	
+    // ✅ ADD THIS - No-args constructor
+    public User() {
+    }
 
+    // existing constructor stays
+    public User(Long id, String name, String email) {
+        super();
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 }
