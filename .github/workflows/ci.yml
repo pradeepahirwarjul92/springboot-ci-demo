@@ -39,19 +39,26 @@ jobs:
         run: |
           & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests -U
 
-      # PHASE 3: Containerization — Download WAR + Build in one step ok
+      # PHASE 3: Containerization — Read version from pom.xml dynamically
       - name: Download WAR and Docker Build
         run: |
+          $version = (Select-Xml -Path "${{ github.workspace }}\pom.xml" `
+            -XPath "/*[local-name()='project']/*[local-name()='version']").Node.InnerText
+
+          Write-Host "Detected version: $version"
+
           Invoke-WebRequest `
-            -Uri "http://192.168.8.25:8081/repository/maven-releases/com/heg/Docker-User-Service-Docker/1.0.8/Docker-User-Service-Docker-1.0.8.war" `
+            -Uri "http://192.168.8.25:8081/repository/maven-releases/com/heg/Docker-User-Service-Docker/$version/Docker-User-Service-Docker-$version.war" `
             -OutFile "${{ github.workspace }}\app.war" `
             -Proxy $null
 
           docker build -t springboot-user-service "${{ github.workspace }}"
-      
+
       # PHASE 4: Deploy — Stop old container and start new one
       - name: Deploy Container
         run: |
           docker stop springboot-user-service 2>$null
           docker rm springboot-user-service 2>$null
-          docker run -d --name springboot-user-service -p 8090:8080 springboot-user-service
+          docker run -d --name springboot-user-service -p 8090:8090 springboot-user-service
+          Start-Sleep -Seconds 10
+          Write-Host "App live at: http://localhost:8090/demo/users"
