@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # ─── JOB 1: Windows Runner (Phases 1-4) ──────────────────────────────
   pipeline:
     runs-on: self-hosted
 
@@ -111,3 +112,24 @@ jobs:
           Write-Host "======================================"
           Write-Host " App live at: http://localhost:9090/demo/users"
           Write-Host "======================================"
+
+  # ─── JOB 2: Ubuntu Runner (Phase 5 - Ansible) ────────────────────────
+  ansible-deploy:
+    runs-on: [self-hosted, Linux, X64]
+    needs: pipeline
+
+    steps:
+      - name: Deploy via Ansible
+        run: |
+          echo "=== PHASE 5: Deploying via Ansible ==="
+          export PATH=$PATH:/home/anchit/.local/bin
+          ansible-playbook \
+            -i /home/anchit/github-actions-ansible/inventory.yml \
+            /home/anchit/github-actions-ansible/deploy-playbook.yml
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Ansible deploy failed!"
+            exit 1
+          fi
+          echo "======================================"
+          echo " App live at: http://localhost:9090/demo/users"
+          echo "======================================"
