@@ -30,15 +30,8 @@ jobs:
       - name: SonarQube Analysis
         run: |
           Write-Host "=== PHASE 1: SonarQube Analysis ==="
-          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean verify sonar:sonar `
-          "-Dsonar.login=${{ env.SONAR_TOKEN }}" `
-          "-Dsonar.host.url=http://localhost:9000" `
-          "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" `
-          "-U"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: SonarQube analysis failed!"
-            exit 1
-          }
+          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean verify sonar:sonar "-Dsonar.login=${{ env.SONAR_TOKEN }}" "-Dsonar.host.url=http://localhost:9000" "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" "-U"
+          if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: SonarQube failed!"; exit 1 }
           Write-Host "SonarQube analysis complete."
 
       # ─── PHASE 2: Artifact Storage ───────────────────────────────────
@@ -46,10 +39,7 @@ jobs:
         run: |
           Write-Host "=== PHASE 2: Uploading artifact to Nexus ==="
           & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests -U
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Nexus deploy failed!"
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: Nexus deploy failed!"; exit 1 }
           Write-Host "Nexus upload complete."
 
       # ─── PHASE 3: Build WAR + Docker Image ───────────────────────────
@@ -57,10 +47,7 @@ jobs:
         run: |
           Write-Host "=== PHASE 3: Building WAR ==="
           & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean package -DskipTests
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Maven build failed!"
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: Maven build failed!"; exit 1 }
 
           Write-Host "=== Checking target folder ==="
           Get-ChildItem "${{ github.workspace }}\target" | Where-Object { $_.Name -like "*.war" }
@@ -79,11 +66,8 @@ jobs:
 
           Write-Host "=== Building Docker image ==="
           & docker build -t "${{ env.IMAGE_NAME }}" "${{ github.workspace }}"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Docker build failed!"
-            exit 1
-          }
-          Write-Host "Docker image '${{ env.IMAGE_NAME }}' built successfully!"
+          if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: Docker build failed!"; exit 1 }
+          Write-Host "Docker image built successfully!"
 
       # ─── PHASE 4: Deploy Container ───────────────────────────────────
       - name: Deploy Container
@@ -93,17 +77,13 @@ jobs:
           Write-Host "--- Stopping and removing old containers ---"
           $ErrorActionPreference = 'SilentlyContinue'
           & docker stop "${{ env.CONTAINER_NAME }}" 2>&1 | Write-Host
-          & docker rm   "${{ env.CONTAINER_NAME }}" 2>&1 | Write-Host
-          & docker stop user-service                2>&1 | Write-Host
-          & docker rm   user-service                2>&1 | Write-Host
+          & docker rm "${{ env.CONTAINER_NAME }}" 2>&1 | Write-Host
+          & docker stop user-service 2>&1 | Write-Host
+          & docker rm user-service 2>&1 | Write-Host
           $ErrorActionPreference = 'Continue'
 
           Write-Host "--- Starting new container ---"
-          & docker run -d `
-            --name "${{ env.CONTAINER_NAME }}" `
-            -p 9090:8090 `
-            --restart unless-stopped `
-            "${{ env.IMAGE_NAME }}"
+          & docker run -d --name "${{ env.CONTAINER_NAME }}" -p 9090:8090 --restart unless-stopped "${{ env.IMAGE_NAME }}"
 
           if ($LASTEXITCODE -ne 0) {
             Write-Host "ERROR: docker run failed! Exit code: $LASTEXITCODE"
