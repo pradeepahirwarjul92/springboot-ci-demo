@@ -51,7 +51,7 @@ jobs:
             -Uri "http://192.168.8.25:8081/repository/maven-releases/com/heg/Docker-User-Service-Docker/$version/Docker-User-Service-Docker-$version.war" `
             -OutFile "${{ github.workspace }}\app.war" `
             -Proxy $null
-
+      
           docker build -t springboot-user-service "${{ github.workspace }}"
 
       # PHASE 4: Deploy — Stop old container and start new one
