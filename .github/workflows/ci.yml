@@ -39,23 +39,45 @@ jobs:
         run: |
           & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" deploy -DskipTests -U
 
-      # PHASE 3: Build WAR locally and copy for Docker
+      # PHASE 3: Build WAR + Docker Image
       - name: Build WAR and Docker Image
         run: |
+          Write-Host "=== STEP 1: Building WAR ==="
           & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean package -DskipTests
 
-          Copy-Item "${{ github.workspace }}\target\demo.war" -Destination "${{ github.workspace }}\app.war" -Force
+          Write-Host "=== STEP 2: Checking target folder ==="
+          Get-ChildItem "${{ github.workspace }}\target" | Where-Object { $_.Name -like "*.war" }
 
+          Write-Host "=== STEP 3: Copying demo.war to app.war ==="
+          if (Test-Path "${{ github.workspace }}\target\demo.war") {
+            Copy-Item "${{ github.workspace }}\target\demo.war" -Destination "${{ github.workspace }}\app.war" -Force
+            Write-Host "SUCCESS: app.war copied!"
+          } else {
+            Write-Host "ERROR: demo.war not found in target!"
+            exit 1
+          }
+
+          Write-Host "=== STEP 4: Verifying app.war ==="
+          Get-ChildItem "${{ github.workspace }}\app.war"
+
+          Write-Host "=== STEP 5: Building Docker image ==="
           docker build -t springboot-user-service "${{ github.workspace }}"
+          Write-Host "Docker image built!"
 
-      # PHASE 4: Deploy — Stop old containers and start fresh one
+      # PHASE 4: Deploy Container
       - name: Deploy Container
         run: |
           docker stop springboot-user-service 2>$null
           docker rm springboot-user-service 2>$null
           docker stop user-service 2>$null
           docker rm user-service 2>$null
+
           docker run -d --name springboot-user-service -p 9090:8090 springboot-user-service
           Start-Sleep -Seconds 20
+
           docker ps
+          docker logs springboot-user-service
+
+          Write-Host "--------------------------------------"
           Write-Host "App live at: http://localhost:9090/demo/users"
+          Write-Host "--------------------------------------"
