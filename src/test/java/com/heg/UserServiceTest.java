@@ -4,18 +4,16 @@ import com.heg.entity.User;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserServiceTest {
-
-    // ─── User Entity Tests (covers User.java completely) ─────────────────
+class UserServiceTest {    // ← removed public
 
     @Test
-    public void testUserNoArgsConstructor() {
+    void testUserNoArgsConstructor() {    // ← removed public
         User user = new User();
         assertNotNull(user);
     }
 
     @Test
-    public void testUserParameterizedConstructor() {
+    void testUserParameterizedConstructor() {    // ← removed public
         User user = new User(1L, "Anchit", "anchit@test.com");
         assertEquals(1L, user.getId());
         assertEquals("Anchit", user.getName());
@@ -23,7 +21,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testUserSettersAndGetters() {
+    void testUserSettersAndGetters() {    // ← removed public
         User user = new User();
         user.setId(2L);
         user.setName("Pradeep");
@@ -35,28 +33,28 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testUserIdSetterGetter() {
+    void testUserIdSetterGetter() {    // ← removed public
         User user = new User();
         user.setId(100L);
         assertEquals(100L, user.getId());
     }
 
     @Test
-    public void testUserNameSetterGetter() {
+    void testUserNameSetterGetter() {    // ← removed public
         User user = new User();
         user.setName("TestUser");
         assertEquals("TestUser", user.getName());
     }
 
     @Test
-    public void testUserEmailSetterGetter() {
+    void testUserEmailSetterGetter() {    // ← removed public
         User user = new User();
         user.setEmail("test@example.com");
         assertEquals("test@example.com", user.getEmail());
     }
 
     @Test
-    public void testUserNullValues() {
+    void testUserNullValues() {    // ← removed public
         User user = new User();
         assertNull(user.getId());
         assertNull(user.getName());
@@ -64,7 +62,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testUserSerializable() {
+    void testUserSerializable() {    // ← removed public
         User user = new User(1L, "Test", "test@test.com");
         assertInstanceOf(java.io.Serializable.class, user);
     }
