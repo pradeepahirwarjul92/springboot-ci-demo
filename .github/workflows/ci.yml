@@ -129,14 +129,25 @@ jobs:
         run: |
           echo "=== PHASE 5: Setting up Infrastructure ==="
 
+          echo "======================================"
+          echo " STEP 1: Cleaning up old containers"
+          echo "======================================"
+
           echo "--- Stop Redis if running ---"
           docker stop redis-cache || true
 
           echo "--- Remove old Redis container ---"
           docker rm redis-cache || true
 
-          echo "--- Disconnect Elasticsearch from app-network first ---"
-          docker network disconnect app-network elasticsearch || true
+          echo "--- Stop Elasticsearch if running ---"
+          docker stop elasticsearch || true
+
+          echo "--- Remove old Elasticsearch container ---"
+          docker rm elasticsearch || true
+
+          echo "======================================"
+          echo " STEP 2: Rebuilding Network"
+          echo "======================================"
 
           echo "--- Remove old app-network ---"
           docker network rm app-network || true
@@ -144,7 +155,10 @@ jobs:
           echo "--- Create fresh app-network ---"
           docker network create app-network
 
-          echo "--- Start fresh Redis container ---"
+          echo "======================================"
+          echo " STEP 3: Starting Redis (Fresh)"
+          echo "======================================"
+
           docker run -d \
             --name redis-cache \
             --network app-network \
@@ -152,32 +166,33 @@ jobs:
             --restart unless-stopped \
             redis:alpine
 
-          echo "--- Wait for Redis to be ready ---"
           sleep 3
-
-          echo "--- Verify Redis is running ---"
           docker exec redis-cache redis-cli ping
+          echo " Redis is FRESH and READY! ✅"
 
           echo "======================================"
-          echo " Redis is FRESH and READY!"
+          echo " STEP 4: Starting Elasticsearch (Fresh)"
           echo "======================================"
 
-          echo "--- Start Elasticsearch ---"
-          docker start elasticsearch || true
+          docker run -d \
+            --name elasticsearch \
+            --network app-network \
+            -p 9200:9200 \
+            -p 9300:9300 \
+            -e "discovery.type=single-node" \
+            -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
+            --restart unless-stopped \
+            elasticsearch:7.17.10
 
-          echo "--- Connect Elasticsearch to app-network ---"
-          docker network connect app-network elasticsearch || true
+          echo "--- Wait 30 seconds for Elasticsearch to boot ---"
+          sleep 30
 
-          echo "--- Wait for Elasticsearch to be ready ---"
-          sleep 15
-
-          echo "--- Verify Elasticsearch is running ---"
-          curl -s http://localhost:9200 | grep "cluster_name" && \
-            echo "Elasticsearch is READY!" || \
+          curl -s http://localhost:9200/_cluster/health | grep "cluster_name" && \
+            echo "Elasticsearch is READY! ✅" || \
             echo "WARNING: Elasticsearch not responding yet"
 
           echo "======================================"
-          echo " All Infrastructure READY!"
+          echo " All Infrastructure FRESH and READY!"
           echo " Redis         → localhost:6379 ✅"
           echo " Elasticsearch → localhost:9200 ✅"
           echo "======================================"
