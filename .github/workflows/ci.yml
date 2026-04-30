@@ -31,9 +31,14 @@ jobs:
       - name: SonarQube Analysis
         run: |
           Write-Host "=== PHASE 1: SonarQube Analysis ==="
-          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean verify sonar:sonar "-Dsonar.login=${{ env.SONAR_TOKEN }}" "-Dsonar.host.url=http://localhost:9000" "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" "-U"
-          if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: SonarQube failed!"; exit 1 }
-          Write-Host "SonarQube analysis complete."
+          & "${{ env.MAVEN_BIN }}" -s "${{ env.SETTINGS_XML }}" clean verify sonar:sonar `
+            "-Dsonar.login=${{ env.SONAR_TOKEN }}" `
+            "-Dsonar.host.url=http://localhost:9000" `
+            "-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml" `
+            "-Dsonar.qualitygate.wait=true" `
+            "-U"
+          if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: SonarQube Quality Gate FAILED!"; exit 1 }
+          Write-Host "SonarQube Quality Gate PASSED!"
 
       # ─── PHASE 2: Artifact Storage ───────────────────────────────────
       - name: Upload to Nexus
