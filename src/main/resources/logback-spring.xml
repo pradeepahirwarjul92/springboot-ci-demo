@@ -16,6 +16,12 @@
         <readTimeout>30000</readTimeout>
         <errorsToStderr>true</errorsToStderr>
         <includeCallerData>false</includeCallerData>
+        <headers>
+            <header>
+                <name>Content-Type</name>
+                <value>application/json</value>
+            </header>
+        </headers>
     </appender>
 
     <root level="INFO">
