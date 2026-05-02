@@ -1,30 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <!-- CONSOLE appender - always works -->
+    <!-- CONSOLE appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Elasticsearch appender via HTTP -->
+    <!-- Elasticsearch HTTP appender -->
     <appender name="ELASTICSEARCH"
         class="com.internetitem.logback.elasticsearch.ElasticsearchAppender">
         <url>http://elasticsearch:9200/_bulk</url>
         <index>user-service-logs-%date{yyyy.MM.dd}</index>
         <type>_doc</type>
         <connectTimeout>30000</connectTimeout>
+        <readTimeout>30000</readTimeout>
         <errorsToStderr>false</errorsToStderr>
         <includeCallerData>false</includeCallerData>
-        <property>
-            <name>app</name>
-            <value>user-service</value>
-        </property>
-        <property>
-            <name>env</name>
-            <value>docker</value>
-        </property>
     </appender>
 
     <root level="INFO">
