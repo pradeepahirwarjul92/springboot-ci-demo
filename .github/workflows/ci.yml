@@ -150,7 +150,6 @@ jobs:
           echo "======================================"
 
           echo "--- Disconnect ALL containers from app-network first ---"
-          docker network disconnect app-network kibana || true
           docker network disconnect app-network springboot-user-service || true
           docker network disconnect app-network redis-cache || true
           docker network disconnect app-network elasticsearch || true
