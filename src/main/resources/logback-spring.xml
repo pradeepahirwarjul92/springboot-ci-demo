@@ -34,14 +34,19 @@
                 <allowEmpty>false</allowEmpty>
             </property>
             <property>
+                <name>message</name>
+                <value>%message</value>
+                <allowEmpty>false</allowEmpty>
+            </property>
+            <property>
                 <name>thread</name>
                 <value>%thread</value>
                 <allowEmpty>false</allowEmpty>
             </property>
             <property>
-                <name>message</name>
-                <value>%message</value>
-                <allowEmpty>false</allowEmpty>
+                <name>stacktrace</name>
+                <value>%ex</value>
+                <allowEmpty>true</allowEmpty>
             </property>
         </properties>
     </appender>
