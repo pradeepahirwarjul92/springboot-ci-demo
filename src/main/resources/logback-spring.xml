@@ -8,16 +8,10 @@
         </encoder>
     </appender>
 
-    <!-- Elasticsearch HTTP appender -->
-    <appender name="ELASTICSEARCH"
-        class="com.internetitem.logback.elasticsearch.ElasticsearchAppender">
-        <url>http://elasticsearch:9200/_bulk</url>
-        <index>user-service-logs-%date{yyyy.MM.dd}</index>
-        <type>_doc</type>
-        <connectTimeout>30000</connectTimeout>
-        <readTimeout>30000</readTimeout>
-        <errorsToStderr>false</errorsToStderr>
-        <includeCallerData>false</includeCallerData>
+    <!-- Elasticsearch appender using logstash-logback-encoder -->
+    <appender name="ELASTICSEARCH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>elasticsearch:5000</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
     <root level="INFO">
