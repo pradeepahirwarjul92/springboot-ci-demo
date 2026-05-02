@@ -149,6 +149,12 @@ jobs:
           echo " STEP 2: Rebuilding Network"
           echo "======================================"
 
+          echo "--- Disconnect ALL containers from app-network first ---"
+          docker network disconnect app-network kibana || true
+          docker network disconnect app-network springboot-user-service || true
+          docker network disconnect app-network redis-cache || true
+          docker network disconnect app-network elasticsearch || true
+
           echo "--- Remove old app-network ---"
           docker network rm app-network || true
 
