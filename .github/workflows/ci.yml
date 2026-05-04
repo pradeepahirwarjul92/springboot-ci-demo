@@ -152,13 +152,12 @@ jobs:
 
 
       # ─── PHASE 5: Setup Infrastructure ────────────────────────────────
-      - name: Setup Infrastructure
+            - name: Setup Infrastructure
         run: |
           echo "=== PHASE 5: Setting up Infrastructure ==="
 
-
           echo "======================================"
-          echo " STEP 1: Cleaning up old containers"
+          echo " STEP 1: Cleaning up only Logstash & Redis"
           echo "======================================"
 
           echo "--- Stop and remove Logstash ---"
@@ -169,43 +168,16 @@ jobs:
           docker stop redis-cache || true
           docker rm redis-cache || true
 
-
-          echo "--- Stop and remove Elasticsearch ---"
-          docker stop elasticsearch || true
-          docker rm elasticsearch || true
-
-
-          echo "--- Stop and remove Kibana ---"
-          docker stop kibana || true
-          docker rm kibana || true
-
-
           echo "======================================"
-          echo " STEP 2: Rebuilding Network"
+          echo " STEP 2: Ensure app-network exists"
           echo "======================================"
 
-
-          echo "--- Disconnect ALL containers from all networks ---"
-          docker network disconnect app-network kibana || true
-          docker network disconnect app-network springboot-user-service || true
-          docker network disconnect app-network redis-cache || true
-          docker network disconnect app-network elasticsearch || true
-          docker network disconnect app-network logstash || true
-          docker network disconnect user-app-network kibana || true
-
-
-          echo "--- Remove old app-network ---"
-          docker network rm app-network || true
-
-
-          echo "--- Create fresh app-network ---"
-          docker network create app-network
-
+          docker network inspect app-network > /dev/null 2>&1 || docker network create app-network
+          echo "app-network ready ✅"
 
           echo "======================================"
           echo " STEP 3: Starting Redis (Fresh)"
           echo "======================================"
-
 
           docker run -d \
             --name redis-cache \
@@ -214,59 +186,61 @@ jobs:
             --restart unless-stopped \
             redis:alpine
 
-
           sleep 3
           docker exec redis-cache redis-cli ping
           echo "Redis is FRESH and READY! ✅"
 
-
           echo "======================================"
-          echo " STEP 4: Starting Elasticsearch (Fresh)"
+          echo " STEP 4: Elasticsearch - Start if not running"
           echo "======================================"
 
-
-          docker run -d \
-            --name elasticsearch \
-            --network app-network \
-            -p 9200:9200 \
-            -p 9300:9300 \
-            -e "discovery.type=single-node" \
-            -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
-            --restart unless-stopped \
-            elasticsearch:7.17.10
-
-
-          echo "--- Wait 30 seconds for Elasticsearch to boot ---"
-          sleep 30
-
+          if [ "$(docker ps -q -f name=elasticsearch)" ]; then
+            echo "Elasticsearch already running ✅ - skipping"
+            docker network connect app-network elasticsearch || true
+          else
+            echo "Starting Elasticsearch..."
+            docker rm elasticsearch || true
+            docker run -d \
+              --name elasticsearch \
+              --network app-network \
+              -p 9200:9200 \
+              -p 9300:9300 \
+              -e "discovery.type=single-node" \
+              -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
+              --restart unless-stopped \
+              elasticsearch:7.17.10
+            echo "--- Wait 30 seconds for Elasticsearch to boot ---"
+            sleep 30
+          fi
 
           curl -s http://localhost:9200/_cluster/health | grep "cluster_name" && \
             echo "Elasticsearch is READY! ✅" || \
             echo "WARNING: Elasticsearch not responding yet"
 
-
           echo "======================================"
-          echo " STEP 5: Starting Kibana (Fresh)"
+          echo " STEP 5: Kibana - Start if not running"
           echo "======================================"
 
-
-          docker run -d \
-            --name kibana \
-            --network app-network \
-            -p 5601:5601 \
-            -e "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" \
-            --restart unless-stopped \
-            kibana:7.17.10
-
-
-          echo "--- Wait 30 seconds for Kibana to boot ---"
-          sleep 30
-
+          if [ "$(docker ps -q -f name=kibana)" ]; then
+            echo "Kibana already running ✅ - skipping (your dashboards are safe!)"
+            docker network connect app-network kibana || true
+          else
+            echo "Starting Kibana..."
+            docker rm kibana || true
+            docker run -d \
+              --name kibana \
+              --network app-network \
+              -p 5601:5601 \
+              -e "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" \
+              --restart unless-stopped \
+              kibana:7.17.10
+            echo "--- Wait 30 seconds for Kibana to boot ---"
+            sleep 30
+          fi
 
           curl -s http://localhost:5601/api/status | grep -o '"level":"[^"]*"' | head -1 && \
             echo "Kibana is READY! ✅" || \
             echo "WARNING: Kibana still booting..."
-
 
           echo "======================================"
           echo " STEP 6: Starting Logstash (Fresh)"
@@ -289,71 +263,10 @@ jobs:
           docker logs logstash --tail 5 || true
           echo "Logstash is READY! ✅"
 
-
           echo "======================================"
-          echo " All Infrastructure FRESH and READY!"
+          echo " All Infrastructure READY!"
           echo " Redis         → localhost:6379 ✅"
           echo " Elasticsearch → localhost:9200 ✅"
-          echo " Kibana        → localhost:5601 ✅"
+          echo " Kibana        → localhost:5601 ✅ (dashboards preserved!)"
           echo " Logstash      → localhost:5045 ✅"
-          echo "======================================"
-
-
-      # ─── PHASE 6: Deploy via Ansible ──────────────────────────────────
-      - name: Deploy via Ansible
-        run: |
-          echo "=== PHASE 6: Deploying via Ansible ==="
-          export PATH=$PATH:/home/anchit/.local/bin
-          ansible-playbook \
-            -i /home/anchit/github-actions-ansible/inventory.yml \
-            /home/anchit/github-actions-ansible/deploy-playbook.yml
-          if [ $? -ne 0 ]; then
-            echo "ERROR: Ansible deploy failed!"
-            exit 1
-          fi
-
-          echo "--- Connecting springboot-user-service to app-network ---"
-          docker network connect app-network springboot-user-service || true
-          echo "springboot-user-service connected to app-network ✅"
-
-          echo "======================================"
-          echo " App live at: http://localhost:9090/demo/users"
-          echo "======================================"
-
-
-      # ─── PHASE 7: Verify All Services ─────────────────────────────────
-      - name: Verify All Services
-        run: |
-          echo "=== PHASE 7: Final Verification ==="
-
-
-          echo "--- All running containers ---"
-          docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-
-
-          echo "--- Spring Boot health ---"
-          curl -s http://localhost:9090/demo/users | head -c 200 || true
-
-
-          echo "--- Redis health ---"
-          docker exec redis-cache redis-cli ping
-
-
-          echo "--- Elasticsearch health ---"
-          curl -s http://localhost:9200/_cluster/health | grep -o '"status":"[^"]*"' || true
-
-
-          echo "--- Kibana health ---"
-          curl -s http://localhost:5601/api/status | grep -o '"level":"[^"]*"' | head -1 || true
-
-          echo "--- Logstash health ---"
-          docker logs logstash --tail 5 || true
-
-
-          echo "======================================"
-          echo " PIPELINE COMPLETE! 🚀"
-          echo " Spring Boot   → http://localhost:9090/demo/users"
-          echo " Elasticsearch → http://localhost:9200"
-          echo " Kibana        → http://172.24.204.45:5601"
-          echo " Logstash      → localhost:5045"
           echo "======================================"
