@@ -263,15 +263,22 @@ jobs:
             echo "WARNING: Kibana still booting..."
 
 
-          echo "======================================"
+                    echo "======================================"
           echo " STEP 6: Starting Logstash (Fresh)"
           echo "======================================"
+
+          docker stop logstash || true
+          docker rm logstash || true
+
+          # Copy logstash.conf to a clean Linux path first (avoids WSL2 mount issues)
+          mkdir -p /tmp/logstash-pipeline
+          cp /home/anchit/actions-runner/_work/Docker-User-Service-Docker/Docker-User-Service-Docker/logstash.conf /tmp/logstash-pipeline/logstash.conf
 
           docker run -d \
             --name logstash \
             --network app-network \
             -p 5045:5045 \
-            -v /home/anchit/logstash-docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf \
+            -v /tmp/logstash-pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf \
             --restart unless-stopped \
             logstash:7.17.10
 
