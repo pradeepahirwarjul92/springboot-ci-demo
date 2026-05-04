@@ -10,7 +10,7 @@
 
     <!-- Logstash Appender (replaces direct ES appender) -->
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>localhost:5045</destination>
+        <destination>host.docker.internal:5045</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <!-- Additional fields same as before -->
             <customFields>{"app":"user-service","environment":"github-actions"}</customFields>
