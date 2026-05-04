@@ -7,7 +7,7 @@ on:
 
 
 jobs:
-  # ─── JOB 1: Windows Runner (Phases 1-4) ──────────────────────────────
+  # ─── JOB 1: Windows Runner (Phases 1-4) ─────────────────────────────
   pipeline:
     runs-on: [self-hosted, windows-runner]
 
