@@ -12,7 +12,7 @@
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>host.docker.internal:5045</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <!-- Additional fields same as before -->
+            <!-- Additional fields same as before  -->
             <customFields>{"app":"user-service","environment":"github-actions"}</customFields>
         </encoder>
         <connectTimeout>30000</connectTimeout>
